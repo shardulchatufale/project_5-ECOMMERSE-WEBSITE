@@ -18,7 +18,7 @@ const userSchema = new mongoose.Schema({
     profileImage:
     {
         type: String,
-        //required: [true, "profileImage is required"]
+        required: [true, "profileImage is required"]
     }, // s3 link
     phone: {
         type: String,
@@ -31,36 +31,36 @@ const userSchema = new mongoose.Schema({
         // minLen: 8, 
         // maxLen: 15
     }, // encrypted password
-    // address: {
-    //     shipping: {
-    //         street: {
-    //             type: String,
-    //             required: [true, "street is required"]
-    //         },
-    //         city: {
-    //             type: String,
-    //             required: [true, "city is required"]
-    //         },
-    //         pincode: {
-    //             type: Number,
-    //             required: [true, "pincode is required"]
-    //         }
-    //     },
-    //     billing: {
-    //         street: {
-    //             type: String,
-    //             required: [true, "street is required"]
-    //         },
-    //         city: {
-    //             type: String,
-    //             required: [true, "city is required"]
-    //         },
-    //         pincode: {
-    //             type: Number,
-    //             required: [true, "pincode is required"]
-    //         },
-    //     }
-    // }
+    address: {
+        shipping: {
+            street: {
+                type: String,
+                required: [true, "street is required"]
+            },
+            city: {
+                type: String,
+                required: [true, "city is required"]
+            },
+            pincode: {
+                type: Number,
+                required: [true, "pincode is required"]
+            }
+        },
+        billing: {
+            street: {
+                type: String,
+                required: [true, "street is required"]
+            },
+            city: {
+                type: String,
+                required: [true, "city is required"]
+            },
+            pincode: {
+                type: Number,
+                required: [true, "pincode is required"]
+            },
+        }
+    }
 }, { timestamps: true }
 );
 

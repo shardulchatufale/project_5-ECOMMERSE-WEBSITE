@@ -1,6 +1,17 @@
 const userModel = require('../models/userModel');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const { uploadFile } = require('../middleWare/fileUpload');
+
+const isValid = function(x) {
+    if (typeof x === "undefined" || x === null) return false;
+    if (typeof x === "string" && x.trim().length === 0) return false;
+
+    return true;
+};
+
+const isValidBody = function(x) {
+    return Object.keys(x).length > 0;
+};
 
 
 const createUser = async function (req, res) {
@@ -14,14 +25,47 @@ const createUser = async function (req, res) {
            
         }
         else {
-            res.status(400).send({ msg: "No file found" })
+            return res.status(400).send({ msg: "No file found" })
         }
         let body = req.body;
+
+        if (!isValidBody(body)) {
+            return res.status(400).send({ status: false, message: "Invalid Request Parameter, Please Provide Another Details" });
+        }
+
         let { fname, lname, email, phone, address, password } = body;
-        
+
+        //validations
+        if (!isValid(fname)) {
+            return res.status(400).send({ status: false, message: "First name is Required" })
+        }
+        if (!isValid(lname)) {
+            return res.status(400).send({ status: false, message: "Last name is Required" })
+        }
+        if (!isValid(email)) {
+            return res.status(400).send({ status: false, message: "Email is Required" })
+        }
+        if (!isValid(phone)) {
+            return res.status(400).send({ status: false, message: "Phone number is Required" })
+        }
+        let {shipping, billing}= address
+        if (!isValid(shipping.pincode)) {
+            return res.status(400).send({ status: false, message: "Address is Required" })
+        }
+        // if(address){
+        //     //let add = JSON.stringify(address)
+        //     let obj= JSON.parse(address)
+        //     console.log(obj.shipping)
+        // }
+        //console.log(address)
+
+
 
         let profileImage = uploadedFileURL;
         let validUserData = {fname, lname, email, profileImage, phone, address, password}
+
+        if(!isValid(profileImage)) return res.status(400).send({ status: false, message: "Profile image is required" })
+
 
         validUserData.profileImage = profileImage
 

@@ -1,0 +1,24 @@
+{
+  "name": "project-5_product_management",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Avijitd07/Project-5_Product_Management.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Avijitd07/Project-5_Product_Management/issues"
+  },
+  "homepage": "https://github.com/Avijitd07/Project-5_Product_Management#readme",
+  "dependencies": {
+    "express": "^4.18.1"
+  }
+}

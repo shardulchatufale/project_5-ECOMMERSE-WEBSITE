@@ -1,6 +1,5 @@
 const mongoose = require("mongoose")
 
-
 const userSchema = new mongoose.Schema({
     fname: {
         type: String,
@@ -15,8 +14,7 @@ const userSchema = new mongoose.Schema({
         required: [true, "email is required"],
         unique: true
     },
-    profileImage:
-    {
+    profileImage: {
         type: String,
         required: [true, "profileImage is required"]
     }, // s3 link
@@ -58,10 +56,10 @@ const userSchema = new mongoose.Schema({
             pincode: {
                 type: Number,
                 required: [true, "pincode is required"]
-            },
+            }
         }
     }
 }, { timestamps: true }
 );
 
-module.exports = mongoose.model("User",userSchema)
+module.exports = mongoose.model("User", userSchema)

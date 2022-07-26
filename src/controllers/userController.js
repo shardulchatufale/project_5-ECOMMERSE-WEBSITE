@@ -9,7 +9,8 @@ const saltRounds = 10;
 let phoneRegex = /^[6-9]\d{9}$/;
 let emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 let passwordRegex = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,15}$/;
-let pincodeRegex = /^[1-9]{1}[0-9]{5}$/; 
+let pincodeRegex = /^[1-9]{1}[0-9]{5}$/;
+let nameRegex = /^([a-zA-Z])+$/;
 
 const isValid = function (x) {
     if (typeof x === "undefined" || x === null) return false;
@@ -17,22 +18,38 @@ const isValid = function (x) {
 
     return true;
 };
-
 const isValidBody = function (x) {
     return Object.keys(x).length > 0;
 };
 
+const isValidImage = function (x) {
+    let regEx = /.+\.(?:(jpg|gif|png|jpeg))/;
+    let result = regEx.test(x);
+    return result;
+}
+
 // Create User ------>
 const createUser = async function (req, res) {
     try {
-        let files = req.files
-        if (files && files.length > 0) {
-            var uploadedFileURL = await uploadFile(files[0])
+        let body = req.body;
+        let profileImage = req.files
+
+        if (profileImage.length == 0) {
+            return res.status(400).send({ status: false, message: "Plesae upload the profile image." });
+        } else if (profileImage.length > 1) {
+            return res.status(400).send({ status: false, message: "Plesae upload only one image." });
+        }
+        if (!isValidImage(profileImage[0].originalname)) {
+            return res.status(400).send({ status: false, message: "Please upload only image file" });
+        }
+
+        if (profileImage && profileImage.length > 0) {
+            var uploadedFileURL = await uploadFile(profileImage[0])
+            profileImage = uploadedFileURL
         }
         else {
             return res.status(400).send({ msg: "No file found" })
         }
-        let body = req.body;
 
         if (!isValidBody(body)) {
             return res.status(400).send({ status: false, message: "Invalid Request Parameter, Please Provide Another Details" });
@@ -44,25 +61,39 @@ const createUser = async function (req, res) {
         if (!isValid(fname)) {
             return res.status(400).send({ status: false, message: "First name is Required" })
         }
+        fname = fname.trim();
         if (!isValid(lname)) {
             return res.status(400).send({ status: false, message: "Last name is Required" })
         }
+        lname = lname.trim();
         if (!isValid(email)) {
             return res.status(400).send({ status: false, message: "Email is Required" })
         }
+        email = email.trim();
         if (!isValid(phone)) {
             return res.status(400).send({ status: false, message: "Phone number is Required" })
         }
+        phone = phone.trim();
         if (!isValid(password)) {
             return res.status(400).send({ status: false, message: "Password is Required" })
         }
+        password = password.trim();
 
-        if(!phoneRegex.test(phone)) return res.status(400).send({ status: false, message: "Phone is not valid, enter a valid phone number" })
+        if (!phoneRegex.test(phone)) return res.status(400).send({ status: false, message: "Phone is not valid, enter a valid phone number" })
+        if (!emailRegex.test(email)) return res.status(400).send({ status: false, message: "Email is not valid" })
+        if (!passwordRegex.test(password)) return res.status(400).send({ status: false, message: "Your password must contain atleast one number,uppercase,lowercase and special character[ @ $ ! % * ? & # ] and length should be min of 8-15 charachaters" })
+        if (!nameRegex.test(fname)) return res.status(400).send({ status: false, message: "FName is not valid, only characters are allowed" })
+        if (!nameRegex.test(lname)) return res.status(400).send({ status: false, message: "LName is not valid, only characters are allowed" })
 
-        if(!emailRegex.test(email)) return res.status(400).send({ status: false, message: "Email is not valid" })
 
-        if(!passwordRegex.test(password)) return res.status(400).send({ status: false, message: "Your password must contain atleast one number,uppercase,lowercase and special character[ @ $ ! % * ? & # ] and length should be min of 8-15 charachaters" })
-
+        let getUserDetails = await userModel.findOne({ $or: [{ email: email }, { phone: phone }] })
+        if (getUserDetails) {
+            if (getUserDetails.phone == phone) {
+                return res.status(400).send({ status: false, msg: `${phone} phone already registered ` })
+            } else {
+                return res.status(400).send({ status: false, msg: `${email} email number already registered` })
+            }
+        }
 
         //address
         if (!isValid(address)) {
@@ -71,43 +102,56 @@ const createUser = async function (req, res) {
 
         let { shipping, billing } = address
 
-        //shipping
+        //shipping------->
         if (!isValid(address.shipping)) {
             return res.status(400).send({ status: false, message: "Shipping is Required" })
         }
         if (!isValid(shipping.street)) {
             return res.status(400).send({ status: false, message: "Street is Required" })
         }
+        shipping.street = shipping.street.trim()
         if (!isValid(shipping.city)) {
             return res.status(400).send({ status: false, message: "Address is Required" })
         }
+        shipping.city = shipping.city.trim()
         if (!isValid(shipping.pincode)) {
             return res.status(400).send({ status: false, message: "Address is Required" })
         }
-        if(!pincodeRegex.test(shipping.pincode)) return res.status(400).send({ status: false, message: "Pincode is not valid, it should be number and of 6 digits only" })
+        shipping.pincode = shipping.pincode.trim()
+        if (!pincodeRegex.test(shipping.pincode)) return res.status(400).send({ status: false, message: "Pincode is not valid, it should be number and of 6 digits only" })
 
-        //billing
+
+
+        //billing-------->
         if (!isValid(address.billing)) {
             return res.status(400).send({ status: false, message: "Billing is Required" })
         }
         if (!isValid(billing.street)) {
             return res.status(400).send({ status: false, message: "Street is Required" })
         }
+        billing.street = billing.street.trim()
         if (!isValid(billing.city)) {
             return res.status(400).send({ status: false, message: "Address is Required" })
         }
+        billing.city = billing.city.trim()
         if (!isValid(billing.pincode)) {
             return res.status(400).send({ status: false, message: "Address is Required" })
         }
-        if(!pincodeRegex.test(billing.pincode)) return res.status(400).send({ status: false, message: "Pincode is not valid, it should be number and of 6 digits only" })
+        billing.pincode = billing.pincode.trim()
+        if (!pincodeRegex.test(billing.pincode)) return res.status(400).send({ status: false, message: "Pincode is not valid, it should be number and of 6 digits only" })
 
 
+        // if (files.length == 0) {
+        //     return res.status(400).send({ status: false, message: "Plesae upload the profile image." });
+        // } else if (files.length > 1) {
+        //     return res.status(400).send({ status: false, message: "Plesae upload the profile image." });
+        // }
 
-        let profileImage = uploadedFileURL;
+        //let profileImage = uploadedFileURL;
 
         let encryptedPassword = await bcrypt.hash(password, saltRounds)
 
-        let validUserData = { fname, lname, email, profileImage: profileImage, phone, address, password: encryptedPassword }
+        let validUserData = { fname: fname, lname, email, profileImage: profileImage, phone, address, password: encryptedPassword }
 
         if (!isValid(profileImage)) return res.status(400).send({ status: false, message: "Profile image is required" })
 
@@ -125,15 +169,15 @@ const createUser = async function (req, res) {
 // Login User-------->
 const loginUser = async function (req, res) {
     try {
-        let email = req.body.email 
-        let password = req.body.password  
+        let email = req.body.email
+        let password = req.body.password
 
-        
+
         // Email validation 
         if (!isValid(email)) {
             return res.status(400).send({ status: false, message: "Email is Required" })
         }
-        if(!emailRegex.test(email)) return res.status(400).send({ status: false, message: "Email is not valid" })
+        if (!emailRegex.test(email)) return res.status(400).send({ status: false, message: "Email is not valid" })
 
 
 
@@ -141,7 +185,7 @@ const loginUser = async function (req, res) {
         if (!isValid(password)) {
             return res.status(400).send({ status: false, message: "Password is Required" })
         }
-        if(!passwordRegex.test(password)) return res.status(400).send({ status: false, message: "Your password must contain atleast one number,uppercase,lowercase and special character[ @ $ ! % * ? & # ] and length should be min of 8-15 charachaters" })
+        if (!passwordRegex.test(password)) return res.status(400).send({ status: false, message: "Your password must contain atleast one number,uppercase,lowercase and special character[ @ $ ! % * ? & # ] and length should be min of 8-15 charachaters" })
 
 
         let findUser = await userModel.findOne({ email: email })
@@ -187,73 +231,131 @@ const getUser = async function (req, res) {
 // Update User --------> 
 const updateUser = async function (req, res) {
     let userId = req.params.userId
-    if (!objectId.isValid(userId)) return res.status(400).send({ status: false, message: "Invalid userId" });
+    //if (!objectId.isValid(userId)) return res.status(400).send({ status: false, message: "Invalid userId" });
 
+    let files = req.files
     let body = req.body
-    if (!isValidBody(body)) {
+    //console.log(files);
+
+
+    if (!isValidBody(body) && !isValid(files)) {
         return res.status(400).send({ status: false, message: "Invalid Request Parameter, Please Provide Another Details" });
     }
 
     let { fname, lname, email, phone, address, password } = body;
 
-    //validations======>
 
+    //validations======>
     if ("fname" in body && !isValid(fname)) {
         return res.status(400).send({ status: false, message: "First name is Required" })
     }
+
     if ("lname" in body && !isValid(lname)) {
         return res.status(400).send({ status: false, message: "Last name is Required" })
     }
+
     if ("email" in body && !isValid(email)) {
         return res.status(400).send({ status: false, message: "Email is Required" })
     }
+
     if ("phone" in body && !isValid(phone)) {
         return res.status(400).send({ status: false, message: "Phone number is Required" })
     }
+
     if ("password" in body && !isValid(password)) {
         return res.status(400).send({ status: false, message: "Password is Required" })
     }
-
-    // //address validation ======>
-    if ("address" in body && !isValid(address)) {
-        return res.status(400).send({ status: false, message: "Address is Required" })
+    if ("profileImage" in body && !isValid(profileImage)) {
+        return res.status(400).send({ status: false, message: "profileImage is Required" })
     }
 
-    let { shipping, billing } = address
+    if (email) {
+        email = email.trim();
+        if (!emailRegex.test(email)) return res.status(400).send({ status: false, message: "Email is not valid" })
+    }
+    if (password) {
+        password = password.trim()
+        if (!passwordRegex.test(password)) return res.status(400).send({ status: false, message: "Your password must contain atleast one number,uppercase,lowercase and special character[ @ $ ! % * ? & # ] and length should be min of 8-15 charachaters" })
+    }
+    if (phone) {
+        phone = phone.trim();
+        if (!phoneRegex.test(phone)) return res.status(400).send({ status: false, message: "Phone is not valid, enter a valid phone number" })
+    }
 
-    //shipping validation =======>
+    if (phone || email) {
+        let getUserDetails = await userModel.findOne({ $or: [{ email: email }, { phone: phone }] })
+        if (getUserDetails) {
+            if (getUserDetails.phone == phone) {
+                return res.status(400).send({ status: false, msg: `${phone} phone already registered ` })
+            } else {
+                return res.status(400).send({ status: false, msg: `${email} email number already registered` })
+            }
+        }
 
-    // [if(shipping.street) {
-    //     let updatedShippingStreet = shipping.street
-    // }]
-    // if ("shipping" in body.address && !isValid(address.shipping)) {
-    //     return res.status(400).send({ status: false, message: "Shipping is Required" })
-    // }
-    // if ("street" in body.address.shipping && !isValid(shipping.street)) {
-    //     return res.status(400).send({ status: false, message: "Street is Required" })
-    // }
-    // if (!isValid(shipping.city)) {
-    //     return res.status(400).send({ status: false, message: "Address is Required" })
-    // }
-    // if (!isValid(shipping.pincode)) {
-    //     return res.status(400).send({ status: false, message: "Address is Required" })
+    }
+    // //address validation ======>
+
+    if (address) {
+        let { shipping, billing } = address
+
+        if ("address" in body && !isValid(address)) {
+            return res.status(400).send({ status: false, message: "Address is Required" })
+        }
+
+        //shipping validation =======>
+        if (address.shipping) {
+            if ("shipping" in body.address && !isValid(address.shipping)) {
+                return res.status(400).send({ status: false, message: "Shipping is Required" })
+            }
+            if (!isValid(shipping.street)) {
+                return res.status(400).send({ status: false, message: "Street is Required" })
+            }
+            if (!isValid(shipping.city)) {
+                return res.status(400).send({ status: false, message: "City is Required" })
+            }
+            if (!isValid(shipping.pincode)) {
+                return res.status(400).send({ status: false, message: "Pincode is Required" })
+            }
+        }
+
+        // //billing validation========>
+        if (address.billing) {
+            if ("billing" in body.address && !isValid(address.billing)) {
+                return res.status(400).send({ status: false, message: "Shipping is Required" })
+            }
+            if (!isValid(billing.street)) {
+                return res.status(400).send({ status: false, message: "Street is Required" })
+            }
+            if (!isValid(billing.city)) {
+                return res.status(400).send({ status: false, message: "Address is Required" })
+            }
+            if (!isValid(billing.pincode)) {
+                return res.status(400).send({ status: false, message: "Address is Required" })
+            }
+        }
+    }
+
+    // if (files && files.length > 0) {
+    //     var uploadedFileURL = await uploadFile(files[0])
+    //     var profileImage = uploadedFileURL
     // }
 
-    // //billing validation========>
-    // if (!isValid(address.billing)) {
-    //     return res.status(400).send({ status: false, message: "Billing is Required" })
-    // }
-    // if (!isValid(billing.street)) {
-    //     return res.status(400).send({ status: false, message: "Street is Required" })
-    // }
-    // if (!isValid(billing.city)) {
-    //     return res.status(400).send({ status: false, message: "Address is Required" })
-    // }
-    // if (!isValid(billing.pincode)) {
-    //     return res.status(400).send({ status: false, message: "Address is Required" })
+    if (files && files.length > 0) {
+        if (files.length > 1) {
+            return res.status(400).send({ status: false, message: "Please upload only on image" });
+        }
+        if (!isValidImage(files[0].originalname)) {
+            return res.status(400).send({ status: false, message: "Please upload only image file" });
+        }
+        var uploadedFileURL = await uploadFile(files[0])
+        var profileImage = uploadedFileURL
+    }
+    // if (files.length == 0) {
+    //     return res.status(400).send({ status: false, message: "Please upload an image" });
     // }
 
-    //let validUserData = { fname, lname, email, profileImage: profileImage, phone, address, password: encryptedPassword }
+
+
 
     let updatedData = await userModel.findByIdAndUpdate(
         { _id: userId },
@@ -263,12 +365,13 @@ const updateUser = async function (req, res) {
             email,
             phone,
             address,
-            password
+            password,
+            profileImage
         },
         { new: true });
-    if(!updatedData) return res.status(404).send({ status: false, message: "User not found" }); 
+    if (!updatedData) return res.status(404).send({ status: false, message: "User not found" });
 
-    return res.status(200).send({status: false, message: "User profile updated", data: updatedData})
+    return res.status(200).send({ status: true, message: "User profile updated", data: updatedData })
 
 }
 

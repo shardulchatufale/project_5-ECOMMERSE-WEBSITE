@@ -109,17 +109,18 @@ const createUser = async function (req, res) {
         if (!isValid(shipping.street)) {
             return res.status(400).send({ status: false, message: "Street is Required" })
         }
-        shipping.street = shipping.street.trim()
+        //shipping.street = shipping.street.trim()
         if (!isValid(shipping.city)) {
-            return res.status(400).send({ status: false, message: "Address is Required" })
+            return res.status(400).send({ status: false, message: "City is Required" })
         }
         shipping.city = shipping.city.trim()
         if (!isValid(shipping.pincode)) {
-            return res.status(400).send({ status: false, message: "Address is Required" })
+            return res.status(400).send({ status: false, message: "Pincode is Required" })
         }
         shipping.pincode = shipping.pincode.trim()
-        if (!pincodeRegex.test(shipping.pincode)) return res.status(400).send({ status: false, message: "Pincode is not valid, it should be number and of 6 digits only" })
 
+        if (!pincodeRegex.test(shipping.pincode)) return res.status(400).send({ status: false, message: "Pincode is not valid, it should be number and of 6 digits only" })
+        if (!nameRegex.test(shipping.city)) return res.status(400).send({ status: false, message: "City is not valid" })
 
 
         //billing-------->
@@ -129,16 +130,18 @@ const createUser = async function (req, res) {
         if (!isValid(billing.street)) {
             return res.status(400).send({ status: false, message: "Street is Required" })
         }
-        billing.street = billing.street.trim()
+        //billing.street = billing.street.trim()
         if (!isValid(billing.city)) {
-            return res.status(400).send({ status: false, message: "Address is Required" })
+            return res.status(400).send({ status: false, message: "City is Required" })
         }
         billing.city = billing.city.trim()
         if (!isValid(billing.pincode)) {
-            return res.status(400).send({ status: false, message: "Address is Required" })
+            return res.status(400).send({ status: false, message: "Pincode is Required" })
         }
         billing.pincode = billing.pincode.trim()
+
         if (!pincodeRegex.test(billing.pincode)) return res.status(400).send({ status: false, message: "Pincode is not valid, it should be number and of 6 digits only" })
+        if (!nameRegex.test(billing.city)) return res.status(400).send({ status: false, message: "City is not valid" })
 
 
         // if (files.length == 0) {
@@ -192,7 +195,7 @@ const loginUser = async function (req, res) {
         if (!findUser) return res.status(404).send({ status: false, msg: 'invalid emailId' })
 
         let verifiedPassword = await bcrypt.compare(password, findUser.password)
-        console.log(verifiedPassword);
+        //console.log(verifiedPassword);
         if (!verifiedPassword) return res.status(400).send({ status: false, message: "Invalid credentials" })
 
         let token = jwt.sign({
@@ -228,7 +231,7 @@ const getUser = async function (req, res) {
 }
 
 
-// Update User --------> 
+// Update User --------> || more work to do
 const updateUser = async function (req, res) {
     let userId = req.params.userId
     //if (!objectId.isValid(userId)) return res.status(400).send({ status: false, message: "Invalid userId" });
@@ -248,39 +251,46 @@ const updateUser = async function (req, res) {
     //validations======>
     if ("fname" in body && !isValid(fname)) {
         return res.status(400).send({ status: false, message: "First name is Required" })
+    } 
+    if(fname) {
+        fname = fname.trim();
     }
 
     if ("lname" in body && !isValid(lname)) {
         return res.status(400).send({ status: false, message: "Last name is Required" })
     }
+    if(fname) {
+        lname = lname.trim();
+    }
 
     if ("email" in body && !isValid(email)) {
         return res.status(400).send({ status: false, message: "Email is Required" })
+    }
+    if (email) {
+        email = email.trim();
+        if (!emailRegex.test(email)) return res.status(400).send({ status: false, message: "Email is not valid" })
     }
 
     if ("phone" in body && !isValid(phone)) {
         return res.status(400).send({ status: false, message: "Phone number is Required" })
     }
+    if (phone) {
+        phone = phone.trim();
+        if (!phoneRegex.test(phone)) return res.status(400).send({ status: false, message: "Phone is not valid, enter a valid phone number" })
+    }
 
     if ("password" in body && !isValid(password)) {
         return res.status(400).send({ status: false, message: "Password is Required" })
-    }
-    if ("profileImage" in body && !isValid(profileImage)) {
-        return res.status(400).send({ status: false, message: "profileImage is Required" })
-    }
-
-    if (email) {
-        email = email.trim();
-        if (!emailRegex.test(email)) return res.status(400).send({ status: false, message: "Email is not valid" })
     }
     if (password) {
         password = password.trim()
         if (!passwordRegex.test(password)) return res.status(400).send({ status: false, message: "Your password must contain atleast one number,uppercase,lowercase and special character[ @ $ ! % * ? & # ] and length should be min of 8-15 charachaters" })
     }
-    if (phone) {
-        phone = phone.trim();
-        if (!phoneRegex.test(phone)) return res.status(400).send({ status: false, message: "Phone is not valid, enter a valid phone number" })
+
+    if ("profileImage" in body && !isValid(profileImage)) {
+        return res.status(400).send({ status: false, message: "profileImage is Required" })
     }
+
 
     if (phone || email) {
         let getUserDetails = await userModel.findOne({ $or: [{ email: email }, { phone: phone }] })
@@ -291,54 +301,65 @@ const updateUser = async function (req, res) {
                 return res.status(400).send({ status: false, msg: `${email} email number already registered` })
             }
         }
-
     }
-    // //address validation ======>
-
+    //address validation ======>
     if (address) {
         let { shipping, billing } = address
 
-        if ("address" in body && !isValid(address)) {
-            return res.status(400).send({ status: false, message: "Address is Required" })
-        }
+        // if ("address" in body && !isValid(address)) {
+        //     return res.status(400).send({ status: false, message: "Address is Required" })
+        // }
 
         //shipping validation =======>
         if (address.shipping) {
-            if ("shipping" in body.address && !isValid(address.shipping)) {
-                return res.status(400).send({ status: false, message: "Shipping is Required" })
-            }
+            // if ("shipping" in body.address && !isValid(address.shipping)) {
+            //     return res.status(400).send({ status: false, message: "Shipping is Required" })
+            // }
             if (!isValid(shipping.street)) {
                 return res.status(400).send({ status: false, message: "Street is Required" })
             }
             if (!isValid(shipping.city)) {
                 return res.status(400).send({ status: false, message: "City is Required" })
             }
+            if(shipping.city){
+                shipping.city = shipping.city.trim();
+                if (!nameRegex.test(shipping.city)) return res.status(400).send({ status: false, message: "City is not valid, only characters are allowed" })
+            }
+
             if (!isValid(shipping.pincode)) {
                 return res.status(400).send({ status: false, message: "Pincode is Required" })
+            }
+            if(shipping.pincode){
+                shipping.pincode = shipping.pincode.trim();
+                if (!pincodeRegex.test(shipping.pincode)) return res.status(400).send({ status: false, message: "Pincode is not valid, it should be number and of 6 digits only" })
             }
         }
 
         // //billing validation========>
         if (address.billing) {
-            if ("billing" in body.address && !isValid(address.billing)) {
-                return res.status(400).send({ status: false, message: "Shipping is Required" })
-            }
+            // if ("billing" in body.address && !isValid(address.billing)) {
+            //     return res.status(400).send({ status: false, message: "Shipping is Required" })
+            // }
             if (!isValid(billing.street)) {
                 return res.status(400).send({ status: false, message: "Street is Required" })
             }
             if (!isValid(billing.city)) {
-                return res.status(400).send({ status: false, message: "Address is Required" })
+                return res.status(400).send({ status: false, message: "City is Required" })
             }
+            if(billing.city){
+                billing.city = billing.city.trim();
+                if (!nameRegex.test(billing.city)) return res.status(400).send({ status: false, message: "City is not valid, only characters are allowed" })
+            }
+
             if (!isValid(billing.pincode)) {
-                return res.status(400).send({ status: false, message: "Address is Required" })
+                return res.status(400).send({ status: false, message: "Pincode is Required" })
+            }
+            if(billing.pincode){
+                billing.pincode = billing.pincode.trim();
+                if (!pincodeRegex.test(billing.pincode)) return res.status(400).send({ status: false, message: "Pincode is not valid, it should be number and of 6 digits only" })
             }
         }
     }
-
-    // if (files && files.length > 0) {
-    //     var uploadedFileURL = await uploadFile(files[0])
-    //     var profileImage = uploadedFileURL
-    // }
 
     if (files && files.length > 0) {
         if (files.length > 1) {
@@ -350,11 +371,6 @@ const updateUser = async function (req, res) {
         var uploadedFileURL = await uploadFile(files[0])
         var profileImage = uploadedFileURL
     }
-    // if (files.length == 0) {
-    //     return res.status(400).send({ status: false, message: "Please upload an image" });
-    // }
-
-
 
 
     let updatedData = await userModel.findByIdAndUpdate(

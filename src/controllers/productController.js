@@ -1,5 +1,6 @@
 const productModel = require('../models/productModel')
 const { uploadFile } = require('../middleWare/fileUpload');
+const ObjectId = require('mongoose').Types.ObjectId
 
 
 const isValid = function (val) {
@@ -139,8 +140,7 @@ const getProduct = async function (req, res) {
             if (!isValidSize(size)) return res.status(400).send({ status: false, message: "Please enter valid size" })
             if (size.includes(",")) {
                 size = size.split(",").map(x => x.trim().toUpperCase());
-                filterData.availableSizes = size//{ $all: size }
-                //console.log(filterData.availableSizes);
+                filterData.availableSizes = size
             }
             filterData.availableSizes = size;
         }
@@ -163,7 +163,7 @@ const getProduct = async function (req, res) {
         if ((priceGreaterThan && priceLessThan)) filterData.price = { $gte: priceGreaterThan, $lte: priceLessThan }
 
         if (priceSort || priceSort == '') {
-            if (!isValid(priceLessThan)) return res.status(400).send({ status: false, message: "Please enter priceSort" })
+            if (!isValid(priceSort)) return res.status(400).send({ status: false, message: "Please enter priceSort" })
             if (priceSort === '1' || priceSort === '-1') {
                 sort.price = Number(priceSort);
             } else {
@@ -206,21 +206,20 @@ const updateProductDetails = async function (req, res) {
         const image = req.files
         const updateData = req.body
 
-        let { title, description, price, style, availableSizes, installments, isFreeShipping } = updateData
-
-        if (!objectId.isValid(productId)) return res.status(400).send({ status: false, msg: "invalid product Id" })
-
-        if ((Object.keys(updateData).length == 0)) return res.status(400).send({ status: false, msg: "please provide data to update" })
+        let { title, description, price, style, availableSizes, installments, isFreeShipping} = updateData
 
         if (image && image.length > 0) {
-            if (!isImageFile(image[0].originalname)) return res.status(400).send({ status: false, message: "Please provide image only" })
+            if (!isValidImage(image[0].originalname)) return res.status(400).send({ status: false, message: "Please provide image only" })
             let updateProductImage = await uploadFile(image[0])
             updateData.productImage = updateProductImage
         }
 
-        if (typeof title != undefined) {
+        if (!ObjectId.isValid(productId)) return res.status(400).send({ status: false, msg: "invalid product Id" })
+
+        if ((Object.keys(updateData).length == 0)) return res.status(400).send({ status: false, msg: "please provide data to update" })
+
+        if (title != undefined) {
             if (!isValid(title)) return res.status(400).send({ status: false, message: "title Should be Valid" })
-            //if (!isValidTitle(title)) return res.status(400).send({ status: false, message: "title should not contain number" })
             if (await productModel.findOne({ title })) return res.status(400).send({ status: false, message: "the title is same as the present title of this product" })
         }
         if (description != undefined) {
@@ -232,10 +231,12 @@ const updateProductDetails = async function (req, res) {
 
         if (style != undefined) {
             if (!isValid(style)) return res.status(400).send({ status: false, message: "style Should be Valid" })
+            if(!(/^[A-Za-z ]+$/.test(style))) return res.status(400).send({status:false,msg:'please provide valid style'})
             //if (!isValidString(style)) return res.status(400).send({ status: false, message: "style Should Not Contain Numbers" })
         }
         if (availableSizes != undefined) {
             if (!isValid(availableSizes)) return res.status(400).send({ status: false, message: "availableSizes Should be Valid" })
+            if(!isValidSize(availableSizes)) return res.status(400).send({status:false,msg:'please put a valid size'}) 
             availableSizes = availableSizes.split(",").map(x => x.trim().toUpperCase())
             //if (availableSizes.map(x => isValidSize(x)).filter(x => x === false).length !== 0) return res.status(400).send({ status: false, message: "Size Should be Among  S,XS,M,X,L,XXL,XL" })
             updateData.availableSizes = availableSizes
@@ -254,7 +255,7 @@ const updateProductDetails = async function (req, res) {
     catch (err) {
         console.log(err)
         return res.status(500).send({ status: false, error: err.message })
-    }
+    } 
 }
 
 const deleteProducts = async function (req, res) {

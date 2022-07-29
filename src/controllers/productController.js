@@ -163,7 +163,7 @@ const getProduct = async function (req, res) {
         if ((priceGreaterThan && priceLessThan)) filterData.price = { $gte: priceGreaterThan, $lte: priceLessThan }
 
         if (priceSort || priceSort == '') {
-            if (!isValid(priceLessThan)) return res.status(400).send({ status: false, message: "Please enter priceSort" })
+            if (!isValid(priceSort)) return res.status(400).send({ status: false, message: "Please enter priceSort" })
             if (priceSort === '1' || priceSort === '-1') {
                 sort.price = Number(priceSort);
             } else {
@@ -174,7 +174,7 @@ const getProduct = async function (req, res) {
         let allProducts = await productModel.find(filterData).sort(sort);
         if (allProducts.length == 0) return res.status(404).send({ status: false, message: "Product not found" })
 
-        return res.status(200).send({ status: true, data: allProducts })
+        return res.status(200).send({ status: true, message: "Success",data: allProducts })
     } catch (error) {
         return res.status(500).send({ status: false, message: error.message })
     }

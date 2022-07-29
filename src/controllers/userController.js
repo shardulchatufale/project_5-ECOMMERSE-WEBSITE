@@ -161,7 +161,7 @@ const createUser = async function (req, res) {
         //validUserData.profileImage = profileImage
 
         let userdata = await userModel.create(validUserData);
-        return res.status(201).send({ status: true, data: userdata });
+        return res.status(201).send({ status: true, message:"Success", data: userdata });
 
     } catch (error) {
         return res.status(500).send({ status: false, message: error.message });
@@ -205,7 +205,7 @@ const loginUser = async function (req, res) {
         }, "GroupNo-61", { expiresIn: '1h' })
         //console.log(token)
 
-        return res.status(200).send({ status: true, UserId: findUser._id, token: token })
+        return res.status(200).send({ status: true, message: "Success", UserId: findUser._id, token: token })
 
     } catch (error) {
         return res.status(500).send({ status: false, message: error.message });

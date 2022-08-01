@@ -9,6 +9,7 @@ const isValid = function (val) {
 
     return true;
 };
+
 const isValidBody = function (val) {
     return Object.keys(val).length > 0;
 };

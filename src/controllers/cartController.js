@@ -8,6 +8,9 @@ const isValid = function (val) {
 
     return true;
 };
+const isValidBody = function (val) {
+    return Object.keys(val).length > 0;
+};
 
 const createCart = async function (req, res) {
 
@@ -15,6 +18,8 @@ const createCart = async function (req, res) {
     let data = req.body;
 
     let { cartId, productId, quantity } = data;
+
+    if(!isValidBody(data)) return res.status(400).send({status: false, message: "Invalid Request Parameter, Please Provide Another Details"})
 
     //if(!isValid(productId)) return res.status(400).send({ status: false, message: "productId is required" });
     if (!ObjectId.isValid(productId)) return res.status(400).send({ status: false, message: "Please enter a valid prductId" });

@@ -1,7 +1,8 @@
 const express = require('express');
 const { createUser, loginUser, getUser, updateUser } = require('../controllers/userController');
 const { authentication, authorization } = require('../middleWare/auth');
-const { createProduct, getProduct, getProductById, updateProductDetails, deleteProducts } = require('../controllers/productController')
+const { createProduct, getProduct, getProductById, updateProductDetails, deleteProducts } = require('../controllers/productController');
+const {createCart} = require('../controllers/cartController');
 
 
 const router = express.Router();
@@ -17,6 +18,10 @@ router.get('/products', getProduct)
 router.get('/products/:productId', getProductById)
 router.put('/products/:productId', updateProductDetails)
 router.delete('/products/:productId', deleteProducts)
+
+
+/**************CART ROUTES **************/
+router.post('/users/:userId/cart', createCart)
 
 
 //FOR WRONG URL

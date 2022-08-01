@@ -363,7 +363,7 @@ const updateUser = async function (req, res) {
 
     if (files && files.length > 0) {
         if (files.length > 1) {
-            return res.status(400).send({ status: false, message: "Please upload only on image" });
+            return res.status(400).send({ status: false, message: "Please upload only one image" });
         }
         if (!isValidImage(files[0].originalname)) {
             return res.status(400).send({ status: false, message: "Please upload only image file" });

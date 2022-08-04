@@ -25,6 +25,10 @@ const isValidPrice = (val) => {
         return true;
 };
 
+const isValidSize = function (val) {
+    return ["S", "XS", "M", "X", "L", "XXL", "XL"].indexOf(...val) !== -1;
+};
+
 //--------->Create Product
 
 const createProduct = async function (req, res) {
@@ -103,7 +107,7 @@ const createProduct = async function (req, res) {
             if (availableSizes.length == 0) return res.status(400).send({ status: false, message: 'availableSizes can not be empty' })
 
             let sizes = ["S", "XS", "M", "X", "L", "XXL", "XL"]
-            availableSizes = availableSizes.map((x) => x.trim())
+            //availableSizes = availableSizes.map((x) => x.trim())
             for (let i = 0; i < availableSizes.length; i++) {
                 if (sizes.includes(availableSizes[i]) == false) {
                     return res.status(400).send({ status: false, message: 'Please put valid size' })
@@ -135,7 +139,7 @@ const getProduct = async function (req, res) {
             if (!isValid(size)) return res.status(400).send({ status: false, message: "Please enter size" })
             if (!isValidSize(size)) return res.status(400).send({ status: false, message: "Please enter valid size" })
             if (size.includes(",")) {
-                size = size.split(",").map(x => x.trim().toUpperCase());
+                size = size.split(",").map(x => x.trim());
                 filterData.availableSizes = size
             }
             filterData.availableSizes = size;
@@ -250,7 +254,7 @@ const updateProductDetails = async function (req, res) {
             if (availableSizes.length == 0) return res.status(400).send({ status: false, message: 'availableSizes can not be empty' })
 
             let sizes = ["S", "XS", "M", "X", "L", "XXL", "XL"]
-            availableSizes = availableSizes.map((x) => x.trim())
+            //availableSizes = availableSizes.map((x) => x.trim())
             for (let i = 0; i < availableSizes.length; i++) {
                 if (sizes.includes(availableSizes[i]) == false) {
                     return res.status(400).send({ status: false, message: 'Please put valid size' })
@@ -280,7 +284,7 @@ const updateProductDetails = async function (req, res) {
 const deleteProducts = async function (req, res) {
     try {
         let productId = req.params.productId;
-        if (!ObjectId) {
+        if (!ObjectId.isValid(productId)) {
             return res.status(400).send({ status: false, message: "Please provide valid productId in params" })
         }
         let product = await productModel.findOneAndUpdate({ _id: productId, isDeleted: false }, { $set: { isDeleted: true, deletedAt: new Date() } });

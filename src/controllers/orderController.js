@@ -66,7 +66,7 @@ const updateOrder = async function (req, res) {
     try {
         let userId = req.params.userId
         let data = req.body
-        let { orderId, status, ...rest} = data
+        let { orderId, status, ...rest } = data
 
         if (!isValidBody(data)) return res.status(400).send({ status: false, message: "body can't be empty" })
         if (Object.keys(rest).length > 0) return res.status(400).send({ status: false, message: "please put valid keys" })
@@ -79,11 +79,11 @@ const updateOrder = async function (req, res) {
         if (userId !== orderData.userId.toString()) return res.status(404).send({ status: false, message: 'this orderId is not for this user' })
 
         if (status == "cancled") {
-            
+
             if (orderData.cancellable == false) return res.status(400).send({ status: false, message: 'this order is not available for cancelation' })
         }
 
-        let updateOrder = await orderModel.findOneAndUpdate({ _id: orderId,userId : userId }, { $set: { status: status } }, { new: true })
+        let updateOrder = await orderModel.findOneAndUpdate({ _id: orderId, userId: userId }, { $set: { status: status } }, { new: true })
         return res.status(200).send({ status: true, message: 'Success', data: updateOrder })
     } catch (err) {
         console.log(err)

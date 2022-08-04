@@ -38,7 +38,7 @@ const createCart = async function (req, res) {
     if (cartData) {
         //if(!isValid(cartId)) return res.status(400).send({ status: false, message: "cartId is required" });
         if (!ObjectId.isValid(cartId)) return res.status(400).send({ status: false, message: "Please enter a valid cartId" });
-        if (cartData._id != cartId) return res.status(400).send({ status: false, message: "cart does not belong to this user" });
+        if (cartData._id.toString() !== cartId) return res.status(400).send({ status: false, message: "cart does not belong to this user" });
 
         let index = -1;
         for (let i = 0; i < cartData.items.length; i++) {

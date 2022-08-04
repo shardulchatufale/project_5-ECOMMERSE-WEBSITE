@@ -85,7 +85,10 @@ const updateOrder = async function (req, res) {
         }
 
         if(orderData.status==="canceled"){
-            return res.status(400).send({status:false,message:'the order is canceled already you can not change its status'})
+            return res.status(400).send({status:false,message:'the order is canceled, you can not change its status'})
+        }
+        if(orderData.status==="completed"){
+            return res.status(400).send({status:false,message:'the order is completed, you can not change its status'})
         }
 
         let updateOrder = await orderModel.findOneAndUpdate({ _id: orderId, userId: userId }, { $set: { status: status } }, { new: true })

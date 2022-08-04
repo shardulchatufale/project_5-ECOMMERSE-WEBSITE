@@ -5,9 +5,9 @@ const ObjectId = require('mongoose').Types.ObjectId;
 const isValid = function (val) {
     if (typeof val === "undefined" || val === null) return false;
     if (typeof val === "string" && val.trim().length === 0) return false;
-
     return true;
 };
+
 const isValidBody = function (val) {
     return Object.keys(val).length > 0;
 };
@@ -147,7 +147,7 @@ const getCart = async function (req, res) {
         let userId = req.params.userId
         let cartData = await cartModel.findOne({ userId: userId })
         if(!cartData) return res.status(404).send({status:false,message:'cart not found for this user'})
-        return res.status(200).send({status:false,message:'Success',data:cartData})
+        return res.status(200).send({status:true,message:'Success',data:cartData})
 
     } catch (err) {
         console.log(err)

@@ -15,7 +15,7 @@ const isValidBody = function (val) {
 };
 
 const isValidStatus = function (val) {
-    return ["pending", "completed", "cancled"].indexOf(val) !== -1;
+    return ["pending", "completed", "canceled"].indexOf(val) !== -1;
 };
 
 const orderCreate = async function (req, res) {
@@ -54,6 +54,7 @@ const orderCreate = async function (req, res) {
             cancellable: cancellable
         }
         let order = await orderModel.create(obj)
+        await cartModel.findByIdAndUpdate(cartId,{$set:{items:[],totalItems:0,totalPrice:0}})
         return res.status(200).send({ status: false, message: 'Success', data: order })
 
     } catch (err) {
@@ -75,12 +76,16 @@ const updateOrder = async function (req, res) {
         if (!ObjectId.isValid(orderId)) return res.status(400).send({ status: false, message: 'please put a valid orderId' })
 
         let orderData = await orderModel.findOne({ _id: orderId, userId: userId })
+
         if (!orderData) return res.status(404).send({ status: false, message: 'order not found for the user' })
         if (userId !== orderData.userId.toString()) return res.status(404).send({ status: false, message: 'this orderId is not for this user' })
 
-        if (status == "cancled") {
-
+        if (status == "canceled") {
             if (orderData.cancellable == false) return res.status(400).send({ status: false, message: 'this order is not available for cancelation' })
+        }
+
+        if(orderData.status==="canceled"){
+            return res.status(400).send({status:false,message:'the order is canceled already you can not change its status'})
         }
 
         let updateOrder = await orderModel.findOneAndUpdate({ _id: orderId, userId: userId }, { $set: { status: status } }, { new: true })

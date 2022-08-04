@@ -107,7 +107,6 @@ const createProduct = async function (req, res) {
             if (availableSizes.length == 0) return res.status(400).send({ status: false, message: 'availableSizes can not be empty' })
 
             let sizes = ["S", "XS", "M", "X", "L", "XXL", "XL"]
-            //availableSizes = availableSizes.map((x) => x.trim())
             for (let i = 0; i < availableSizes.length; i++) {
                 if (sizes.includes(availableSizes[i]) == false) {
                     return res.status(400).send({ status: false, message: 'Please put valid size' })

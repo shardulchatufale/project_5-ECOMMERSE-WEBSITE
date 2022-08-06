@@ -88,10 +88,10 @@ const createUser = async function (req, res) {
 
         let getUserDetails = await userModel.findOne({ $or: [{ email: email }, { phone: phone }] })
         if (getUserDetails) {
-            if (getUserDetails.phone == phone) {
-                return res.status(400).send({ status: false, msg: `${phone} phone already registered ` })
-            } else {
+            if (getUserDetails.email == email) {
                 return res.status(400).send({ status: false, msg: `${email} email number already registered` })
+            } else {
+                return res.status(400).send({ status: false, msg: `${phone} phone already registered ` })
             }
         }
 
@@ -245,7 +245,9 @@ const updateUser = async function (req, res) {
         return res.status(400).send({ status: false, message: "Invalid Request Parameter, Please Provide Another Details" });
     }
 
-    let { fname, lname, email, phone, address, password } = body;
+    let { fname, lname, email, phone, address, password, ...rest} = body;
+
+    if(Object.keys(rest).length>0) return res.status(400).send({status:false,message:'please put valid keys'})
 
 
     //validations======>

@@ -53,6 +53,7 @@ const orderCreate = async function (req, res) {
             totalQuantity: sum,
             cancellable: cancellable
         }
+        if(cartData.items.length == 0) return res.status(400).send({status:false,message:"invalid request"})
         let order = await orderModel.create(obj)
         await cartModel.findByIdAndUpdate(cartId,{$set:{items:[],totalItems:0,totalPrice:0}})
         return res.status(200).send({ status: false, message: 'Success', data: order })

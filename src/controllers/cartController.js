@@ -37,7 +37,7 @@ const createCart = async function (req, res) {
     let cartData = await cartModel.findOne({ userId: userId });
     if (cartData) {
         //if(!isValid(cartId)) return res.status(400).send({ status: false, message: "cartId is required" });
-        if (!ObjectId.isValid(cartId)) return res.status(400).send({ status: false, message: "Please enter a valid cartId" });
+        if (!ObjectId.isValid(cartId)) return res.status(400).send({ status: false, message: "Please enter cartId" });
         if (cartData._id.toString() !== cartId) return res.status(400).send({ status: false, message: "cart does not belong to this user" });
 
         let index = -1;

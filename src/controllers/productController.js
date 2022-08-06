@@ -57,9 +57,11 @@ const createProduct = async function (req, res) {
             return res.status(400).send({ status: false, message: "Invalid Request Parameter, Please Provide Another Details" });
         }
 
-        let { title, description, price, currencyId, currencyFormat, availableSizes, style, installments } = body;
+        let { title, description, price, currencyId, currencyFormat, availableSizes, style, installments, ...rest } = body;
 
         //validations
+        if(Object.keys(rest).length>0) return res.status(400).send({status:false,message:'please put valid keys'})
+
         if (!isValid(title)) {
             return res.status(400).send({ status: false, message: "title is Required" })
         }
@@ -129,7 +131,9 @@ const createProduct = async function (req, res) {
 const getProduct = async function (req, res) {
     try {
         let query = req.query
-        let { size, name, priceGreaterThan, priceLessThan, priceSort } = query;
+        let { size, name, priceGreaterThan, priceLessThan, priceSort, ...rest } = query;
+
+        if(Object.keys(rest).length>0) return res.status(400).send({status:false,message:'please put valid keys'})
 
         let filterData = { isDeleted: false };
         let sort = {};
